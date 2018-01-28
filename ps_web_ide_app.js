@@ -437,6 +437,7 @@ window.addEventListener("keydown", function(e) {
 /* BEGIN JS to initialize the editor and to display the PeopleCode in it */
 var editor = ace.edit(document.getElementById("editor"));
 //editor.session.setOption("useWorker", false);
+editor.$blockScrolling = Infinity;
 editor.setShowPrintMargin(false);
 editor.getSession().setTabSize(3);
 editor.setOptions({

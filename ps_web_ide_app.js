@@ -385,8 +385,12 @@ w2ui["layout"].content("top", $("#toolbar").w2toolbar({
             id: "file",
             text: "File",
             items: [{
-                text: "Save",
+                text: "Save Program",
                 id: "save",
+                icon: "icon-page"
+            },{
+                text: "Save Workspace",
+                id: "saveWk",
                 icon: "icon-page"
             }]
         },
@@ -404,6 +408,9 @@ w2ui["layout"].content("top", $("#toolbar").w2toolbar({
         if (event.subItem != null) {
             if (event.subItem.id === "save") {
                 saveOpenedProgram();
+            }
+            if (event.subItem.id === "saveWk") {
+                saveWorkspace();
             }
             if (event.item.id === "openobj") {
                 openPopup(event.subItem);

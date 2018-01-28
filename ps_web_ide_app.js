@@ -103,7 +103,6 @@ function getWorkspace() {
                     populateSidebar(workspaceJson[x], true);
                 }
             } else {
-                alert('No Workapce Defined for User');
                 window.workspace.value = [];
             }
         }

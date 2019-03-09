@@ -64,49 +64,18 @@ function saveOpenedProgram() {
 }
 
 function saveWorkspace() {
-    var params = "peoplecode=" + encodeURIComponent(JSON.stringify(window.workspace.value));
-    params = params + "&key=" + window.workspace.key;
-
-    w2ui["layout"].lock("main", "", true); //Lock the main conent panel
-
-    var xmlhttp = sendPostRequest(window.workspace.save, params);
-
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-            w2ui["layout"].unlock("main");
-            var responseObj = JSON.parse(xmlhttp.responseText);
-            if (xmlhttp.status == 200 && xmlhttp.getResponseHeader("Custom-Status") == 200) {
-                updateStatus("Saved Workspace", false);
-            } else if (xmlhttp.getResponseHeader("Custom-Status") == 400) {
-                updateStatus("Falied to save workspace", true);
-            } else {
-                alert("Unknown Error Occured");
-            }
-        }
-    };
+    localStorage.setItem("90:PSM_WIDE_WS_USER_ID:95:4", JSON.stringify(window.workspace.value));
 }
 
 function getWorkspace() {
-    var params = "key=" + window.workspace.key;
 
-    w2ui["layout"].lock("main", "", true); //Lock the main conent panel
+    if (localStorage.getItem("90:PSM_WIDE_WS_USER_ID:95:4") === null) {
+        window.workspace.value = [];
+        return;
+    }
 
-    var xmlhttp = sendPostRequest(window.workspace.get, params);
+    window.workspace.value = JSON.parse(localStorage.getItem("90:PSM_WIDE_WS_USER_ID:95:4"));
 
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-            w2ui["layout"].unlock("main");
-            var responseObj = JSON.parse(xmlhttp.responseText);
-            var workspaceJson = JSON.parse(decodeURIComponent(responseObj.peoplecode));
-            if (xmlhttp.status == 200 && xmlhttp.getResponseHeader("Custom-Status") == 200) {
-                for (var x in workspaceJson) {
-                    populateSidebar(workspaceJson[x], true);
-                }
-            } else {
-                window.workspace.value = [];
-            }
-        }
-    };
 }
 
 function getProgram(obj) {
@@ -427,6 +396,7 @@ w2ui["layout"].content("main", "<div id='editor' style='visibility: hidden;'></d
 /* Populate Preview (Bottom) Content Panel */
 updateStatus("Welcome", false);
 /* Populate Left (Sidebar) Content Panel */
+window.workspace = {};
 getWorkspace();
 
 window.addEventListener("keydown", function(e) {

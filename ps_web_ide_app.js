@@ -65,6 +65,7 @@ function saveOpenedProgram() {
 
 function saveWorkspace() {
     localStorage.setItem("90:PSM_WIDE_WS_USER_ID:95:4", JSON.stringify(window.workspace.value));
+    updateStatus("Saved Workspace", false);
 }
 
 function getWorkspace() {
@@ -75,6 +76,10 @@ function getWorkspace() {
     }
 
     window.workspace.value = JSON.parse(localStorage.getItem("90:PSM_WIDE_WS_USER_ID:95:4"));
+
+    for (var x in window.workspace.value) {
+        populateSidebar(window.workspace.value[x], true);
+    }
 
 }
 

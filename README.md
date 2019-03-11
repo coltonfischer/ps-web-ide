@@ -6,3 +6,8 @@
 - Assign the _PSM_WIDE_ Permission List to a User Role
 
 - Navigate to `PSM Projects > Web IDE > Open Web IDE`
+
+### Additional Details
+- [Video Demo](https://www.youtube.com/watch?v=99JV-53VFkQ)
+
+- [Blog Post](https://www.peoplesoftmods.com/tips-and-tricks/online-peoplecode-editor/)

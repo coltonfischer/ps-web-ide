@@ -1,0 +1,164 @@
+import %metadata:ContentDefn:ContentDefn_Manager;
+import %metadata:ContentDefn:ContentDefn;
+import %metadata:Key;
+
+Declare Function WriteError PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
+Declare Function GetMetadataKey PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
+
+
+Function IScript_Save
+   
+   Local string &sKey = %Request.GetParameter("key");
+   Local string &sPeopleCode = %Request.GetParameter("peoplecode");
+   
+   If None(&sKey) Or
+         None(&sPeopleCode) Then
+      WriteError("Missing parameters");
+   End-If;
+   
+   Local array of any &oParams = GetMetadataKey(&sKey);
+   Local %metadata:Key &key = CreateObjectArray("%metadata:Key", &oParams);
+   
+   Local %metadata:ContentDefn:ContentDefn_Manager &oContentDefn_Manager;
+   &oContentDefn_Manager = create %metadata:ContentDefn:ContentDefn_Manager();
+   
+   If Not (&oContentDefn_Manager.DefnExists(&key)) Then
+      WriteError("HTML Object does not exist for the provided keys");
+   End-If;
+   
+   Local %metadata:ContentDefn:ContentDefn &oContentDefn;
+   Local boolean &bRet;
+   
+   try
+      &oContentDefn = &oContentDefn_Manager.GetDefnToUpdate(&key);
+   catch Exception &e
+      WriteError(&e.ToString());
+   end-try;
+   
+   &oContentDefn.ContStrData = &sPeopleCode;
+   
+   try
+      &bRet = &oContentDefn.UpdateDefn();
+   catch Exception &ex
+      WriteError(&ex.ToString());
+   end-try;
+   
+   %Response.SetHeader("Custom-Status", "200");
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&oContentDefn.ContStrData));
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_Open
+   
+   Local string &sKey = %Request.GetParameter("key");
+   
+   If None(&sKey) Then
+      WriteError("Missing parameters");
+   End-If;
+   
+   Local array of any &oParams = GetMetadataKey(&sKey);
+   
+   Local %metadata:Key &key = CreateObjectArray("%metadata:Key", &oParams);
+   Local %metadata:ContentDefn:ContentDefn_Manager &oContentDefn_Manager;
+   &oContentDefn_Manager = create %metadata:ContentDefn:ContentDefn_Manager();
+   
+   If Not (&oContentDefn_Manager.DefnExists(&key)) Then
+      WriteError("HTML Object does not exist for the provided keys");
+   End-If;
+   
+   try
+      Local %metadata:ContentDefn:ContentDefn &oContentDefn = &oContentDefn_Manager.GetDefn(&key);
+   catch Exception &e
+      WriteError(&e.ToString());
+   end-try;
+   
+   %Response.SetHeader("Custom-Status", "200");
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&oContentDefn.ContStrData));
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_GetKeys
+   
+   Local string &sJsonObject = %Request.GetParameter("request");
+   
+   If None(&sJsonObject) Then
+      WriteError("Missing parameters");
+   End-If;
+   
+   Local JsonParser &oParser = CreateJsonParser();
+   Local boolean &bRet = &oParser.Parse(&sJsonObject);
+   Local JsonObject &oJson = &oParser.GetRootObject();
+   
+   Local string &sObjectName = &oJson.GetJsonObject("record").GetString("Name");
+   
+   Local Rowset &rPSPCMPROG = CreateRowset(Record.PSCONTENT);
+   &rPSPCMPROG.Fill("WHERE CONTTYPE =: 1 and CONTNAME =:2 ", "4", &sObjectName);
+   
+   If (&rPSPCMPROG.ActiveRowCount = 1 And
+         None(&rPSPCMPROG.GetRow(1).PSCONTENT.CONTTYPE.Value)) Then
+      WriteError("Invalid Object Name");
+   End-If;
+   
+   Local JsonObject &oResponse = CreateJsonObject();
+   Local JsonArray &oLevel1 = CreateJsonArray();
+   Local JsonArray &oLevel2 = CreateJsonArray();
+   Local JsonObject &oKey = CreateJsonObject();
+   
+   &oKey.AddProperty("val", "90" | ":" | &sObjectName | ":" | Key:Class_ContentType | ":" | "4");
+   
+   &oLevel2.AddJsonObjectElement("", &oKey);
+   &oLevel1.AddJsonArrayElement("", &oLevel2);
+   &oResponse.AddJsonArray("progkeys", &oLevel1);
+   &oResponse.AddProperty("status", "success");
+   &oResponse.AddProperty("objectType", "90");
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_GetNames
+   
+   Local string &sJsonObject = %Request.GetParameter("request");
+   
+   If None(&sJsonObject) Then
+      WriteError("Missing parameters");
+   End-If;
+   
+   Local JsonParser &oParser = CreateJsonParser();
+   Local boolean &bRet = &oParser.Parse(&sJsonObject);
+   Local JsonObject &oJson = &oParser.GetRootObject();
+   
+   Local string &sSearch = &oJson.GetString("search");
+   
+   Local array of any &A = CreateArrayAny("");
+   Local string &sSqlStatement = "select DISTINCT(CONTNAME) from %TABLE(:1) where CONTTYPE = :2 and CONTNAME like :3";
+   Local SQL &SQL = CreateSQL(&sSqlStatement, Record.PSCONTENT, "4", Upper(&sSearch) | "%");
+   
+   Local JsonArray &oRecords = CreateJsonArray();
+   Local integer &i = 1;
+   
+   While &SQL.Fetch(&A)
+      Local JsonObject &oRecord = CreateJsonObject();
+      &oRecord.AddProperty("id", &i);
+      &oRecord.AddProperty("text", &A [1]);
+      &oRecords.AddJsonObjectElement("", &oRecord);
+      &i = &i + 1;
+   End-While;
+   
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddJsonArray("records", &oRecords);
+   &oResponse.AddProperty("status", "success");
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+

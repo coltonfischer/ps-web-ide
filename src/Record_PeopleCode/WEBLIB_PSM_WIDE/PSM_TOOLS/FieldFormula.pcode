@@ -1,0 +1,4 @@
+Function IScript_WebIDE()
+   %Response.Write(GetHTMLText(HTML.PSM_WIDE_CONTAINER));
+End-Function;
+

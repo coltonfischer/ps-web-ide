@@ -1,0 +1,35 @@
+Function WriteError(&psMessage)
+   %Response.SetHeader("Custom-Status", "400");
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddProperty("status", "error");
+   &oResponse.AddProperty("message", &psMessage);
+   %Response.Write(&oResponse.ToString());
+   Exit;
+End-Function;
+
+
+Function GetMetadataKey(&psKey) Returns array of any
+   
+   Local array of string &asVals = Split(&psKey, ":");
+   
+   If (&asVals.Len < 2 Or
+         Mod(&asVals.Len, 2) <> 0) Then
+      WriteError("Unexpected or Invalid Key Structure");
+   End-If;
+   
+   Local string &sObjectName;
+   Local integer &i;
+   Local array of any &oParams = CreateArray();
+   
+   For &i = 1 To &asVals.Len
+      If (Mod(&i, 2) <> 0) Then
+         &oParams.Push(Value(&asVals [&i]));
+      Else
+         &oParams.Push(String(&asVals [&i]));
+      End-If;
+   End-For;
+   
+   Return &oParams;
+   
+End-Function;
+

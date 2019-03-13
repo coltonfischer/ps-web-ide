@@ -1,0 +1,202 @@
+import %metadata:Key;
+import %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager;
+import %metadata:PeopleCodeProgram:PeopleCodeProgram;
+
+Declare Function WriteError PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
+Declare Function GetMetadataKey PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
+
+
+Function IScript_GetNames
+   
+   Local string &sJsonObject = %Request.GetParameter("request");
+   Local string &sObjTypeCode = %Request.GetParameter("objtype");
+   
+   If None(&sJsonObject) Then
+      WriteError("Search Parameter Required");
+   End-If;
+   
+   If None(&sObjTypeCode) Then
+      WriteError("Invalid ObjectId");
+   End-If;
+   
+   Local JsonParser &oParser = CreateJsonParser();
+   Local boolean &bRet = &oParser.Parse(&sJsonObject);
+   Local JsonObject &oJson = &oParser.GetRootObject();
+   
+   Local string &sSearch = &oJson.GetString("search");
+   
+   Local string &sSqlStatement = "SELECT DISTINCT(OBJECTVALUE1) FROM %TABLE(:1) WHERE OBJECTID1 = :2 and OBJECTVALUE1 like :3";
+   Local SQL &SQL = CreateSQL(&sSqlStatement, Record.PSPCMPROG, &sObjTypeCode, Upper(&sSearch) | "%");
+   
+   Local array of any &A = CreateArrayAny("");
+   Local JsonArray &oRecords = CreateJsonArray();
+   Local integer &i = 1;
+   
+   While &SQL.Fetch(&A)
+      Local JsonObject &oRecord = CreateJsonObject();
+      &oRecord.AddProperty("id", &i);
+      &oRecord.AddProperty("text", &A [1]);
+      &oRecords.AddJsonObjectElement("", &oRecord);
+      &i = &i + 1;
+   End-While;
+   
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddJsonArray("records", &oRecords);
+   &oResponse.AddProperty("status", "success");
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_GetKeys
+   
+   Local string &sJsonObject = %Request.GetParameter("request");
+   Local string &sObjTypeCode = %Request.GetParameter("objtype");
+   
+   If None(&sJsonObject) Then
+      WriteError("Object Value Required");
+   End-If;
+   
+   If None(&sObjTypeCode) Then
+      WriteError("Object ID Required");
+   End-If;
+   
+   Local JsonParser &oParser = CreateJsonParser();
+   Local boolean &bRet = &oParser.Parse(&sJsonObject);
+   Local JsonObject &oJson = &oParser.GetRootObject();
+   
+   Local string &sObjectValue1 = &oJson.GetJsonObject("record").GetString("Name");
+   
+   Local Rowset &rPSPCMPROG = CreateRowset(Record.PSPCMPROG);
+   &rPSPCMPROG.Fill("WHERE OBJECTID1 =: 1 and OBJECTVALUE1 =:2 ", &sObjTypeCode, &sObjectValue1);
+   
+   If (&rPSPCMPROG.ActiveRowCount = 1 And
+         None(&rPSPCMPROG.GetRow(1).PSPCMPROG.OBJECTID1.Value)) Then
+      WriteError("Invalid Object Name " | &sObjectValue1);
+   End-If;
+   
+   Local integer &i;
+   Local JsonArray &oKeys = CreateJsonArray();
+   
+   For &i = 1 To &rPSPCMPROG.ActiveRowCount
+      
+      Local JsonArray &oSubKeys = CreateJsonArray();
+      
+      Local Record &rRecRow = &rPSPCMPROG.GetRow(&i).PSPCMPROG;
+      Local string &sProgKey = &rRecRow.OBJECTID1.Value | ":" | &rRecRow.OBJECTVALUE1.Value;
+      
+      Local JsonObject &oKey = CreateJsonObject();
+      &oKey.AddProperty("val", &sProgKey);
+      &oSubKeys.AddJsonObjectElement("", &oKey);
+      
+      Local integer &j = 2;
+      While All(&rRecRow.GetField(@("FIELD.OBJECTID" | &j)).Value)
+         
+         &sProgKey = &sProgKey | ":" | &rRecRow.GetField(@("FIELD.OBJECTID" | &j)).Value | ":" | &rRecRow.GetField(@("FIELD.OBJECTVALUE" | &j)).Value;
+         
+         &oKey = CreateJsonObject();
+         &oKey.AddProperty("val", &sProgKey);
+         &oSubKeys.AddJsonObjectElement("", &oKey);
+         
+         &j = &j + 1;
+      End-While;
+      
+      &oKeys.AddJsonArrayElement("", &oSubKeys);
+   End-For;
+   
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddJsonArray("progkeys", &oKeys);
+   &oResponse.AddProperty("status", "success");
+   &oResponse.AddProperty("objectType", String(&sObjTypeCode));
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_Open()
+   
+   Local string &sKey = %Request.GetParameter("key");
+   
+   Local array of any &oParams = GetMetadataKey(&sKey);
+   
+   Local %metadata:Key &key = CreateObjectArray("%metadata:Key", &oParams);
+   Local %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager &oPeopleCodeProgram_Manager;
+   &oPeopleCodeProgram_Manager = create %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager();
+   
+   If Not (&oPeopleCodeProgram_Manager.DefnExists(&key)) Then
+      WriteError("Program Does Not Exist");
+   End-If;
+   
+   try
+      Local %metadata:PeopleCodeProgram:PeopleCodeProgram &oPeopleCodeProgram = &oPeopleCodeProgram_Manager.GetDefn(&key);
+   catch Exception &e
+      WriteError(&e.ToString());
+   end-try;
+   
+   Local string &sProgram = &oPeopleCodeProgram.GetProgram();
+   
+   %Response.SetHeader("Custom-Status", "200");
+   Local JsonObject &oResponse = CreateJsonObject();
+   &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&sProgram));
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+
+
+Function IScript_Save()
+   
+   Local string &sKey = %Request.GetParameter("key");
+   Local array of any &oParams = GetMetadataKey(&sKey);
+   
+   Local %metadata:Key &key = CreateObjectArray("%metadata:Key", &oParams);
+   Local %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager &oPeopleCodeProgram_Manager;
+   &oPeopleCodeProgram_Manager = create %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager();
+   
+   If Not (&oPeopleCodeProgram_Manager.DefnExists(&key)) Then
+      WriteError("Program Does Not Exist");
+   End-If;
+   
+   Local string &sPeopleCode = %Request.GetParameter("peoplecode");
+   
+   try
+      Local %metadata:PeopleCodeProgram:PeopleCodeProgram &defn = &oPeopleCodeProgram_Manager.GetDefnToUpdate(&key);
+   catch Exception &e
+      WriteError(&e.ToString());
+   end-try;
+   
+   Local string &strErr;
+   Local integer &int1, &int2;
+   Local boolean &bResult = &defn.UpdateProgram(&sPeopleCode, &strErr, &int1, &int2);
+   
+   Local JsonObject &oResponse = CreateJsonObject();
+   
+   If Not (&bResult) Then
+      &int1 = &int1 - 1;
+      %Response.SetHeader("Custom-Status", "400");
+      &oResponse.AddProperty("message", Split(&strErr, "(2")[1]);
+      &oResponse.AddProperty("startPos", &int1);
+      &oResponse.AddProperty("endPos", &int2);
+      %Response.Write(&oResponse.ToString());
+      Return;
+   End-If;
+   
+   try
+      Local boolean &bSaved = &defn.UpdateDefn();
+   catch Exception &ex
+      WriteError(&ex.ToString());
+   end-try;
+   
+   If Not (&bSaved) Then
+      WriteError("PeopleCode program failed to save.");
+   End-If;
+   
+   %Response.SetHeader("Custom-Status", "200");
+   &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&defn.GetProgram()));
+   
+   %Response.Write(&oResponse.ToString());
+   
+End-Function;
+

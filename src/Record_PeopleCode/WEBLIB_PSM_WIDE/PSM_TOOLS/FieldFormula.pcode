@@ -1,4 +1,59 @@
+import %metadata:Key;
+import %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager;
+import %metadata:PeopleCodeProgram:PeopleCodeProgram;
+
+Declare Function GetMetadataKey PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
+
 Function IScript_WebIDE()
    %Response.Write(GetHTMLText(HTML.PSM_WIDE_CONTAINER));
+End-Function;
+
+Function IScript_RunPC()
+   
+   Local string &sKey = %Request.GetParameter("key");
+   
+   Local array of any &oParams = GetMetadataKey(&sKey);
+   
+   Local %metadata:Key &key = CreateObjectArray("%metadata:Key", &oParams);
+   Local %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager &oPeopleCodeProgram_Manager;
+   &oPeopleCodeProgram_Manager = create %metadata:PeopleCodeProgram:PeopleCodeProgram_Manager();
+   
+   If Not (&oPeopleCodeProgram_Manager.DefnExists(&key)) Then
+      %Response.Write(GetHTMLText(HTML.PSM_WIDE_RUN_PC, "<font color='red'>Error: Program Does Not Exist</font>"));
+      Return;
+   End-If;
+   
+   try
+      Local %metadata:PeopleCodeProgram:PeopleCodeProgram &oPeopleCodeProgram = &oPeopleCodeProgram_Manager.GetDefn(&key);
+   catch Exception &e
+      %Response.Write(GetHTMLText(HTML.PSM_WIDE_RUN_PC, "<font color='red'>Error: " | &e.ToString() | "</font>"));
+      Return;
+   end-try;
+   
+   If &oPeopleCodeProgram.ExtendsClass <> "PSM_RUN_PC:IRunner" Then
+      %Response.Write(GetHTMLText(HTML.PSM_WIDE_RUN_PC, "<font color='red'>Error: Class must extend PSM_RUN_PC:IRunner</font>"));
+      Return;
+   End-If;
+   
+   Local string &sClass;
+   Local integer &i;
+   For &i = 2 To &oParams.Len - 2
+      &sClass = &sClass | &oParams [&i] | ":";
+      &i = &i + 1;
+   End-For;
+   
+   &sClass = RTrim(&sClass, ":");
+   Local object &oRunPC = CreateObject(&sClass);
+   
+   Local string &sOutput;
+   
+   try
+      &sOutput = &oRunPC.Run();
+   catch Exception &e1
+      &sOutput = "<font color='red'>Error: " | &e1.ToString() | "</font>";
+   end-try;
+   
+   %Response.Write(GetHTMLText(HTML.PSM_WIDE_RUN_PC, &sOutput));
+   
 End-Function;
 

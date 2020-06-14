@@ -2,4 +2,3 @@ interface IRunner
    method Run() Returns string;
    
 end-interface;
-

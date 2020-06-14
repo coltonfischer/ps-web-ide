@@ -161,4 +161,3 @@ Function IScript_GetNames
    %Response.Write(&oResponse.ToString());
    
 End-Function;
-

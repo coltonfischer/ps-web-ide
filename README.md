@@ -5,7 +5,7 @@
 
 - Assign the _PSM_WIDE_ Permission List to a User Role
 
-- Navigate to `PSM Projects > Web IDE > Open Web IDE`
+- Navigate to `PSM Projects > Web IDE > Web IDE`
 
 ### Additional Details
 - [Video Demo](https://www.youtube.com/watch?v=99JV-53VFkQ)

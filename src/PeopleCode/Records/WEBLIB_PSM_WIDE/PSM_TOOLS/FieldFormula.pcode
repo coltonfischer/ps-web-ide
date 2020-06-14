@@ -9,7 +9,7 @@ Function IScript_WebIDE()
 End-Function;
 
 Function IScript_RunPC()
-   
+   Doc "this is some attached annotation";
    Local string &sKey = %Request.GetParameter("key");
    
    Local array of any &oParams = GetMetadataKey(&sKey);
@@ -56,4 +56,3 @@ Function IScript_RunPC()
    %Response.Write(GetHTMLText(HTML.PSM_WIDE_RUN_PC, &sOutput));
    
 End-Function;
-

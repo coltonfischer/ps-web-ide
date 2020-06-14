@@ -1,4 +1,5 @@
-Function WriteError(&psMessage)
+Function WriteError(&psMessage As string)
+   Doc "Test z";
    %Response.SetHeader("Custom-Status", "400");
    Local JsonObject &oResponse = CreateJsonObject();
    &oResponse.AddProperty("status", "error");
@@ -32,4 +33,3 @@ Function GetMetadataKey(&psKey) Returns array of any
    Return &oParams;
    
 End-Function;
-

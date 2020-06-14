@@ -12,7 +12,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/people_code"
+                "aceMode": "ace/mode/people_code",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_PEOPLECODE_JS)",
+                "useWorker": false,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_JS_WORKER_JS)"
             }
         },
         "toolbarItem": {
@@ -37,7 +40,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/people_code"
+                "aceMode": "ace/mode/people_code",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_PEOPLECODE_JS)",
+                "useWorker": false,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_JS_WORKER_JS)"
             }
         },
         "toolbarItem": {
@@ -62,7 +68,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/people_code"
+                "aceMode": "ace/mode/people_code",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_PEOPLECODE_JS)",
+                "useWorker": false,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_JS_WORKER_JS)"
             }
         },
         "toolbarItem": {
@@ -87,7 +96,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_PEOPLECODEPROG.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/people_code"
+                "aceMode": "ace/mode/people_code",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_PEOPLECODE_JS)",
+                "useWorker": false,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_JS_WORKER_JS)"
             }
         },
         "toolbarItem": {
@@ -112,7 +124,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_CONTENTDEFN.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_CONTENTDEFN.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/javascript"
+                "aceMode": "ace/mode/javascript",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_JS)",
+                "useWorker": true,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_JS_WORKER_JS)"
             }
         },
         "toolbarItem": {
@@ -137,7 +152,10 @@ var ob = {
                 "openObject": "WEBLIB_PSM_WIDE.PSM_STYLESHEETDEFN.FieldFormula.IScript_Open",
                 "saveObject": "WEBLIB_PSM_WIDE.PSM_STYLESHEETDEFN.FieldFormula.IScript_Save",
                 "icon": "icon-page",
-                "aceMode": "ace/mode/css"
+                "aceMode": "ace/mode/css",
+                "modeUrl": "%JavaScript(PSM_WIDE_ACE_CSS_JS)",
+                "useWorker": true,
+                "workerUrl": "%JavaScript(PSM_WIDE_ACE_CSS_WORKER_JS)"
             }
         },
         "toolbarItem": {

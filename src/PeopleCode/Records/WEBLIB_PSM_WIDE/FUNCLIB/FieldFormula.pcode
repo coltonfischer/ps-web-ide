@@ -1,5 +1,4 @@
 Function WriteError(&psMessage As string)
-   Doc "Test z";
    %Response.SetHeader("Custom-Status", "400");
    Local JsonObject &oResponse = CreateJsonObject();
    &oResponse.AddProperty("status", "error");

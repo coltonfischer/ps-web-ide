@@ -5,11 +5,10 @@ import %metadata:PeopleCodeProgram:PeopleCodeProgram;
 Declare Function GetMetadataKey PeopleCode WEBLIB_PSM_WIDE.FUNCLIB FieldFormula;
 
 Function IScript_WebIDE()
-   %Response.Write(GetHTMLText(HTML.PSM_WIDE_CONTAINER));
+   %Response.Write(GetHTMLText(HTML.PSM_WIDE_CONTAINER, GetHTMLText(HTML.PSM_WIDE_METADATA_JS), GetHTMLText(HTML.PSM_WIDE_APP_JS)));
 End-Function;
 
 Function IScript_RunPC()
-   Doc "this is some attached annotation";
    Local string &sKey = %Request.GetParameter("key");
    
    Local array of any &oParams = GetMetadataKey(&sKey);

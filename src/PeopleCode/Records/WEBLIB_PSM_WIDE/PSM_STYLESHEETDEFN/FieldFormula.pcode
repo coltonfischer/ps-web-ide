@@ -45,6 +45,7 @@ Function IScript_Save
    %Response.SetHeader("Custom-Status", "200");
    Local JsonObject &oResponse = CreateJsonObject();
    &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&oStylesheetDefn.ExtStyleSheetStr));
+   &oResponse.AddProperty("lastUpdate", "Last updated by: " | &oStylesheetDefn.LastUpdOprId | ", " | DateTimeToLocalizedString(&oStylesheetDefn.LastUpdDttm, "MM/dd/yyyy h:mm:ss a"));
    
    %Response.Write(&oResponse.ToString());
    
@@ -79,6 +80,7 @@ Function IScript_Open
    %Response.SetHeader("Custom-Status", "200");
    Local JsonObject &oResponse = CreateJsonObject();
    &oResponse.AddProperty("peoplecode", EncodeURLForQueryString(&oStylesheetDefn.ExtStyleSheetStr));
+   &oResponse.AddProperty("lastUpdate", "Last updated by: " | &oStylesheetDefn.LastUpdOprId | ", " | DateTimeToLocalizedString(&oStylesheetDefn.LastUpdDttm, "MM/dd/yyyy h:mm:ss a"));
    
    %Response.Write(&oResponse.ToString());
    

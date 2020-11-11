@@ -25,14 +25,18 @@ function sendPostRequest(url, params) {
   return xmlhttp;
 }
 
-function updateStatus(msg, err) {
+function updateStatus(msg, err, lastUpdateText) {
   var output = "<span class='fa fa-info-circle'>";
   if (err) {
     output = output + "<font color='red'> " + msg + "</font></span>";
   } else {
     output = output + "<font color='green'> " + msg + "</font></span>";
   }
-  w2ui["layout"].content("preview", output);
+  var lastUpdate = "";
+  if (lastUpdateText) {
+    lastUpdate = "<span style='float: right;'>" + lastUpdateText + "</span>";
+  }
+  w2ui["layout"].content("preview", output + lastUpdate);
 }
 
 function tabText(text, dirty) {
@@ -56,11 +60,12 @@ function saveOpenedProgram() {
       if (xmlhttp.status == 200 && xmlhttp.getResponseHeader("Custom-Status") == 200) {
         updateEditorValue(decodeURIComponent(responseObj.peoplecode), true);
         w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).text = tabText(w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).prettyKey, false);
+        w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).lastUpdate = responseObj.lastUpdate;
         w2ui.layout_main_tabs.refresh();
-        updateStatus("Saved " + w2ui.sidebar.get(w2ui.layout_main_tabs.active).prettyKey, false);
+        updateStatus("Saved " + w2ui.sidebar.get(w2ui.layout_main_tabs.active).prettyKey, false, responseObj.lastUpdate);
       } else if (xmlhttp.getResponseHeader("Custom-Status") == 400) {
         editor.setSelectionRangeIndices(responseObj.startPos, responseObj.endPos);
-        updateStatus(responseObj.message, true);
+        updateStatus(responseObj.message, true, "");
       } else {
         alert("Unknown Error Occured");
       }
@@ -70,7 +75,7 @@ function saveOpenedProgram() {
 
 function saveWorkspace() {
   localStorage.setItem("90:PSM_WIDE_WS_USER_ID:95:4", JSON.stringify(window.workspace.value));
-  updateStatus("Saved Workspace", false);
+  updateStatus("Saved Workspace", false, "");
 }
 
 function runPC(url) {
@@ -123,12 +128,13 @@ function getProgram(obj) {
           id: obj.id,
           prettyKey: obj.prettyKey,
           closable: true,
-          pc: decodeURIComponent(responseObj.peoplecode)
+          pc: decodeURIComponent(responseObj.peoplecode),
+          lastUpdate: responseObj.lastUpdate
         });
         w2ui.layout_main_tabs.get(obj.id).text = tabText(obj.prettyKey, false);
         w2ui.layout_main_tabs.select(obj.id);
         updateEditorValue(decodeURIComponent(responseObj.peoplecode), true);
-        updateStatus("", false);
+        updateStatus("", false, responseObj.lastUpdate);
       } else if (xmlhttp.getResponseHeader("Custom-Status") == 400) {
         alert(responseObj.message);
       } else {
@@ -178,7 +184,7 @@ function populateSidebar(data, init) {
 
   }
   if (!init) {
-    updateStatus("Added " + ob[data.objectType].toolbarItem.text + " to Workspace", false);
+    updateStatus("Added " + ob[data.objectType].toolbarItem.text + " to Workspace", false, "");
   }
   window.workspace.value.push(data);
 }
@@ -329,6 +335,7 @@ $("#layout").w2layout({
           }
           editor.session.setMode(w2ui["sidebar"].get(event.target).aceMode);
           updateEditorValue(w2ui.layout_main_tabs.get(event.target).pc, true);
+          updateStatus("", false, w2ui.layout_main_tabs.get(event.target).lastUpdate);
         },
         onClose: function (event) {
           if (event.target != this.active) {
@@ -336,6 +343,7 @@ $("#layout").w2layout({
           }
           if (w2ui.layout_main_tabs.tabs.length - 1 == 0) {
             updateEditorValue("", false);
+            updateStatus("", false, "");
             return;
           }
           if (w2ui.layout_main_tabs.tabs[w2ui.layout_main_tabs.tabs.length - 1].id != event.target) {
@@ -450,7 +458,7 @@ w2ui["layout"].content("top", $("#toolbar").w2toolbar({
 /* Populate Main Content Panel */
 w2ui["layout"].content("main", "<div id='editor' style='visibility: hidden;'></div>");
 /* Populate Preview (Bottom) Content Panel */
-updateStatus("Welcome", false);
+updateStatus("Welcome", false, "");
 /* Populate Left (Sidebar) Content Panel */
 window.workspace = {};
 getWorkspace();
@@ -539,7 +547,7 @@ editor.getSession().on("change", function () {
   w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).pc = editor.getSession().getValue();
   w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).text = tabText(w2ui.layout_main_tabs.get(w2ui.layout_main_tabs.active).prettyKey, true);
   w2ui.layout_main_tabs.refresh();
-  updateStatus("", false);
+  updateStatus("", false, "");
 });
 
 ace.config.setModuleUrl("ace/ext/searchbox", "%JavaScript(PSM_WIDE_ACE_SEARCH_JS)");

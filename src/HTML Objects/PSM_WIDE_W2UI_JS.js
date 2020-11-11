@@ -11111,7 +11111,7 @@ w2utils.event = {
             // event before
             var edata = obj.trigger({ phase: 'before', type: 'refresh', target: (panel != null ? panel : obj.name), object: obj.get(panel) });
             if (edata.isCancelled === true) return;
-            // obj.unlock(panel);
+            
             if (typeof panel == 'string') {
                 var p = obj.get(panel);
                 if (p == null) return;
@@ -11133,7 +11133,7 @@ w2utils.event = {
                                 .css('overflow', p.overflow)[0].style.cssText += ';' + p.style;
                         }
                         if (p.content && typeof p.content.render == 'function') {
-                           p.content.render(); // do not do .render(box);
+                           p.content.render();
                         }
                     }, 1);
                 } else {
@@ -16713,7 +16713,7 @@ var w2prompt = function (label, title, callBack) {
                                     selDate.setHours(selHour);
                                     var txt = w2utils.formatDateTime(selDate, obj.options.format);
                                     $(obj.el).val(txt).change();
-                                    //$(obj.el).val((hour > 12 && !h24 ? hour - 12 : hour) + ':00' + (!h24 ? (hour < 12 ? ' am' : ' pm') : '')).change();
+                                    
                                 });
                             if (obj.options.noMinutes == null || obj.options.noMinutes === false) {
                                 $('#w2ui-overlay .w2ui-time')
@@ -16729,7 +16729,7 @@ var w2prompt = function (label, title, callBack) {
                                                 selDate.setHours(selHour, selMin);
                                                 var txt = w2utils.formatDateTime(selDate, obj.options.format);
                                                 $(obj.el).val(txt).change();
-                                                //$(obj.el).val((hour > 12 && !h24 ? hour - 12 : hour) + ':' + (min < 10 ? 0 : '') + min + (!h24 ? (hour < 12 ? ' am' : ' pm') : '')).change();
+                                                
                                             })
                                             .on('mouseup', function () {
                                                 setTimeout(function () { if ($("#w2ui-overlay").length > 0) $('#w2ui-overlay').removeData('keepOpen')[0].hide(); }, 10);
